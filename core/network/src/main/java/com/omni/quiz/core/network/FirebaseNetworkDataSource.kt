@@ -7,11 +7,14 @@ import com.omni.quiz.core.model.LeaderboardEntry
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Implementation of [NetworkDataSource] using Firebase Firestore.
  */
-class FirebaseNetworkDataSource(
+@Singleton
+class FirebaseNetworkDataSource @Inject constructor(
     private val firestore: FirebaseFirestore
 ) : NetworkDataSource {
 

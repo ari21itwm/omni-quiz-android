@@ -16,3 +16,10 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
 }
+
+dependencies {
+    implementation(project(":core:model"))
+    implementation(project(":core:data"))
+    
+    implementation(libs.androidx.core.ktx)
+}

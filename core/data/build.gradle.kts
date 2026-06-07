@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.omni.quiz.core.database"
+    namespace = "com.omni.quiz.core.data"
     compileSdk = 35
 
     defaultConfig {
@@ -21,13 +21,12 @@ android {
 
 dependencies {
     implementation(project(":core:model"))
-    
-    implementation(libs.androidx.room.runtime)
-    implementation(libs.androidx.room.ktx)
-    ksp(libs.androidx.room.compiler)
+    implementation(project(":core:network"))
+    implementation(project(":core:database"))
     
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
-
+    
+    implementation(libs.kotlinx.coroutines.core)
     implementation(libs.androidx.core.ktx)
 }
