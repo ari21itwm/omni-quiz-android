@@ -1,0 +1,1 @@
+com.omni.quiz.core.model
