@@ -9,7 +9,8 @@ sealed interface QuizUiState {
         val questions: List<QuizQuestion>,
         val currentQuestionIndex: Int = 0,
         val currentScore: Int = 0,
-        val selectedOptionIndex: Int? = null
+        val selectedOptionIndex: Int? = null,
+        val isHintVisible: Boolean = false
     ) : QuizUiState
     
     data class Error(val message: String) : QuizUiState

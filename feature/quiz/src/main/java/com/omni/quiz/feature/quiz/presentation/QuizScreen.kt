@@ -1,33 +1,43 @@
 package com.omni.quiz.feature.quiz.presentation
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.omni.quiz.core.model.QuizQuestion
+import com.omni.quiz.core.model.QuizType
 
 @Composable
 fun QuizScreen(
@@ -54,7 +64,9 @@ fun QuizScreen(
                     currentIndex = state.currentQuestionIndex,
                     score = state.currentScore,
                     selectedOption = state.selectedOptionIndex,
+                    isHintVisible = state.isHintVisible,
                     onOptionSelected = viewModel::selectOption,
+                    onToggleHint = viewModel::toggleHint,
                     onSubmit = viewModel::submitAnswer
                 )
                 is QuizUiState.GameOver -> GameOverContent(
@@ -100,7 +112,9 @@ private fun QuizContent(
     currentIndex: Int,
     score: Int,
     selectedOption: Int?,
+    isHintVisible: Boolean,
     onOptionSelected: (Int) -> Unit,
+    onToggleHint: () -> Unit,
     onSubmit: () -> Unit
 ) {
     val question = questions.getOrNull(currentIndex) ?: return
@@ -111,79 +125,225 @@ private fun QuizContent(
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = "Question ${currentIndex + 1} of ${questions.size}",
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.primary
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = "Score: $score",
-            style = MaterialTheme.typography.bodyMedium
-        )
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Card(
-            modifier = Modifier.fillMaxWidth()
+        // Progress and Score
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = question.text,
-                modifier = Modifier.padding(24.dp),
-                style = MaterialTheme.typography.headlineSmall,
-                textAlign = TextAlign.Center
+                text = "Step ${currentIndex + 1}/${questions.size}",
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.primary
             )
-        }
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            question.options.forEachIndexed { index, option ->
-                val isSelected = selectedOption == index
-                val containerColor = if (isSelected) {
-                    MaterialTheme.colorScheme.primaryContainer
-                } else {
-                    MaterialTheme.colorScheme.surface
-                }
-                val contentColor = if (isSelected) {
-                    MaterialTheme.colorScheme.onPrimaryContainer
-                } else {
-                    MaterialTheme.colorScheme.onSurface
-                }
-
+            if (!question.isEngagementOnly) {
                 Surface(
-                    onClick = { onOptionSelected(index) },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = MaterialTheme.shapes.medium,
-                    color = containerColor,
-                    contentColor = contentColor,
-                    tonalElevation = 2.dp,
-                    border = if (isSelected) null else androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+                    color = MaterialTheme.colorScheme.secondaryContainer,
+                    shape = MaterialTheme.shapes.extraLarge
                 ) {
                     Text(
-                        text = option,
-                        modifier = Modifier.padding(16.dp),
-                        style = MaterialTheme.typography.bodyLarge
+                        text = "Score: $score",
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold
                     )
                 }
             }
         }
 
-        Spacer(modifier = Modifier.weight(1f))
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Main Content Area
+        Box(modifier = Modifier.weight(1f)) {
+            when (question.type) {
+                QuizType.VOCABULARY -> VocabularyCard(
+                    question = question,
+                    isHintVisible = isHintVisible,
+                    onToggleHint = onToggleHint
+                )
+                QuizType.GEOGRAPHY -> GeographyCard(question = question)
+                QuizType.MOTIVATION -> MotivationCard(question = question)
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Actions Area
+        if (!question.isEngagementOnly) {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                question.options.forEachIndexed { index, option ->
+                    val isSelected = selectedOption == index
+                    val containerColor = if (isSelected) {
+                        MaterialTheme.colorScheme.primaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.surface
+                    }
+                    val contentColor = if (isSelected) {
+                        MaterialTheme.colorScheme.onPrimaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.onSurface
+                    }
+
+                    Surface(
+                        onClick = { onOptionSelected(index) },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = MaterialTheme.shapes.medium,
+                        color = containerColor,
+                        contentColor = contentColor,
+                        tonalElevation = 2.dp,
+                        border = if (isSelected) null else androidx.compose.foundation.BorderStroke(
+                            1.dp,
+                            MaterialTheme.colorScheme.outlineVariant
+                        )
+                    ) {
+                        Text(
+                            text = option,
+                            modifier = Modifier.padding(16.dp),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(32.dp))
 
         Button(
             onClick = onSubmit,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
-            enabled = selectedOption != null
+            enabled = selectedOption != null || question.isEngagementOnly,
+            colors = if (question.isEngagementOnly) ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary) else ButtonDefaults.buttonColors()
         ) {
             Text(
-                text = if (currentIndex < questions.size - 1) "Next Question" else "Finish Quiz",
+                text = when {
+                    question.isEngagementOnly -> "Inspired!"
+                    currentIndex < questions.size - 1 -> "Next Question"
+                    else -> "Finish Quiz"
+                },
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold
+            )
+        }
+    }
+}
+
+@Composable
+private fun VocabularyCard(
+    question: QuizQuestion,
+    isHintVisible: Boolean,
+    onToggleHint: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+    ) {
+        Column(
+            modifier = Modifier.padding(32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Translate this word:",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = question.text,
+                style = MaterialTheme.typography.displaySmall,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+            
+            Spacer(modifier = Modifier.height(24.dp))
+            
+            if (question.translationHint != null) {
+                TextButton(onClick = onToggleHint) {
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = "Show Hint",
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.size(4.dp))
+                    Text(if (isHintVisible) "Hide Hint" else "Show Hint")
+                }
+                
+                AnimatedVisibility(visible = isHintVisible) {
+                    Text(
+                        text = question.translationHint ?: "",
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontStyle = FontStyle.Italic,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun GeographyCard(question: QuizQuestion) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.LightGray.copy(alpha = 0.2f))
+        ) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                // In a real app, use Coil to load question.imageUrl
+                Text(
+                    text = "[ Map Image Placeholder ]\n${question.imageUrl}",
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = question.text,
+            style = MaterialTheme.typography.headlineSmall,
+            textAlign = TextAlign.Center
+        )
+    }
+}
+
+@Composable
+private fun MotivationCard(question: QuizQuestion) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.extraLarge,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+    ) {
+        Column(
+            modifier = Modifier.padding(40.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.Info, // Placeholder for a quote icon
+                contentDescription = null,
+                modifier = Modifier.size(48.dp),
+                tint = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+            Text(
+                text = "\"${question.text}\"",
+                style = MaterialTheme.typography.headlineMedium,
+                fontStyle = FontStyle.Italic,
+                textAlign = TextAlign.Center,
+                lineHeight = 36.sp
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "Daily Motivation",
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.secondary
             )
         }
     }
@@ -223,7 +383,9 @@ private fun GameOverContent(score: Int, onPlayAgain: () -> Unit) {
         Spacer(modifier = Modifier.height(64.dp))
         Button(
             onClick = onPlayAgain,
-            modifier = Modifier.fillMaxWidth().height(56.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
         ) {
             Text("Play Again", fontSize = 18.sp)
         }

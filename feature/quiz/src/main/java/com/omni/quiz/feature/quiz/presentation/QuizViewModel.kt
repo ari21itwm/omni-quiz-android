@@ -47,6 +47,14 @@ class QuizViewModel @Inject constructor(
             } else state
         }
     }
+    
+    fun toggleHint() {
+        _uiState.update { state ->
+            if (state is QuizUiState.Success) {
+                state.copy(isHintVisible = !state.isHintVisible)
+            } else state
+        }
+    }
 
     fun submitAnswer() {
         val currentState = _uiState.value
@@ -54,14 +62,16 @@ class QuizViewModel @Inject constructor(
             val question = currentState.questions.getOrNull(currentState.currentQuestionIndex)
             val isCorrect = question?.correctOptionIndex == currentState.selectedOptionIndex
             
-            val newScore = if (isCorrect) currentState.currentScore + 1 else currentState.currentScore
+            // If it's engagement only (Motivation), it's always "correct" or just doesn't matter
+            val newScore = if (isCorrect && !question?.isEngagementOnly!!) currentState.currentScore + 1 else currentState.currentScore
             val nextIndex = currentState.currentQuestionIndex + 1
             
             if (nextIndex < currentState.questions.size) {
                 _uiState.value = currentState.copy(
                     currentQuestionIndex = nextIndex,
                     currentScore = newScore,
-                    selectedOptionIndex = null
+                    selectedOptionIndex = null,
+                    isHintVisible = false
                 )
             } else {
                 _uiState.value = QuizUiState.GameOver(newScore)

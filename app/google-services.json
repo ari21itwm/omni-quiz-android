@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1011520428266",
+    "project_id": "omniquiz-c34f6",
+    "storage_bucket": "omniquiz-c34f6.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1011520428266:android:ef4b4c6356424d14c2df93",
+        "android_client_info": {
+          "package_name": "com.omni.quiz"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB9igmo4pCipdFxAl2Mz9qnf7oHif5nmzE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
