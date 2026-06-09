@@ -35,28 +35,41 @@ class RealQuizRepository @Inject constructor(
     }
 
     override suspend fun getQuestions(): List<QuizQuestion> {
-        // Return dummy data for initial testing on emulator
         return listOf(
             QuizQuestion(
                 id = "1",
-                text = "What is the capital of France?",
-                options = listOf("London", "Berlin", "Paris", "Madrid"),
-                correctOptionIndex = 2,
-                category = QuizCategory.GEOGRAPHY
+                text = "What is Vibe Coding?",
+                options = listOf("Coding by feel", "A new music genre", "Debugging with bass", "Silent coding"),
+                correctOptionIndex = 0,
+                category = QuizCategory.MOTIVATION
             ),
             QuizQuestion(
                 id = "2",
-                text = "Which planet is known as the Red Planet?",
-                options = listOf("Venus", "Mars", "Jupiter", "Saturn"),
-                correctOptionIndex = 1,
-                category = QuizCategory.GEOGRAPHY
+                text = "Which language did Morpheus use?",
+                options = listOf("Python", "C++", "Binary", "The Matrix"),
+                correctOptionIndex = 2,
+                category = QuizCategory.VOCABULARY
             ),
             QuizQuestion(
                 id = "3",
-                text = "What is 5 + 7?",
-                options = listOf("10", "11", "12", "13"),
+                text = "What is the primary goal of OmniQuiz?",
+                options = listOf("Infinite scrolling", "Knowledge mastery", "Watching ads", "Mining crypto"),
+                correctOptionIndex = 1,
+                category = QuizCategory.MOTIVATION
+            ),
+            QuizQuestion(
+                id = "4",
+                text = "In 'The Matrix', what color is the pill Neo takes?",
+                options = listOf("Blue", "Green", "Red", "Yellow"),
                 correctOptionIndex = 2,
                 category = QuizCategory.VOCABULARY
+            ),
+            QuizQuestion(
+                id = "5",
+                text = "What does 'Offline-First' mean?",
+                options = listOf("No internet needed", "App only works in caves", "Manual data entry", "Data is never saved"),
+                correctOptionIndex = 0,
+                category = QuizCategory.MOTIVATION
             )
         )
     }
