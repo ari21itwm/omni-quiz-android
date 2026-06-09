@@ -28,13 +28,12 @@ class QuizViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.value = QuizUiState.Loading
             try {
-                // For now, we don't have a getQuestions in Repository, but we should.
-                // Let's assume there is some way to get questions or use a dummy list.
-                // I'll add a placeholder for now since the user didn't specify getQuestions in Repository Turn 4.
-                // Actually, Repository has getLeaderboard.
-                // I'll create a dummy list if repository doesn't have it to ensure compilation.
-                val dummyQuestions = listOf<QuizQuestion>() 
-                _uiState.value = QuizUiState.Success(questions = dummyQuestions)
+                val questions = repository.getQuestions()
+                if (questions.isNotEmpty()) {
+                    _uiState.value = QuizUiState.Success(questions = questions)
+                } else {
+                    _uiState.value = QuizUiState.Error("No questions found.")
+                }
             } catch (e: Exception) {
                 _uiState.value = QuizUiState.Error(e.message ?: "Unknown Error")
             }
@@ -67,7 +66,11 @@ class QuizViewModel @Inject constructor(
             } else {
                 _uiState.value = QuizUiState.GameOver(newScore)
                 viewModelScope.launch {
-                    repository.submitFinalScore("user_123", "Quiz Master", newScore)
+                    try {
+                        repository.submitFinalScore("user_123", "Quiz Master", newScore)
+                    } catch (e: Exception) {
+                        // Log or handle error if submission fails
+                    }
                 }
             }
         }

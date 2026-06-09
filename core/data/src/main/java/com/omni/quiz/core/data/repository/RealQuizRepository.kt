@@ -4,6 +4,8 @@ import com.omni.quiz.core.data.mapper.asEntity
 import com.omni.quiz.core.data.mapper.asExternalModel
 import com.omni.quiz.core.database.dao.LeaderboardDao
 import com.omni.quiz.core.model.LeaderboardEntry
+import com.omni.quiz.core.model.QuizCategory
+import com.omni.quiz.core.model.QuizQuestion
 import com.omni.quiz.core.network.NetworkDataSource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
@@ -20,19 +22,43 @@ class RealQuizRepository @Inject constructor(
 ) : QuizRepository {
 
     override fun getLeaderboard(): Flow<List<LeaderboardEntry>> = flow {
-        // 1. Emit local cache instantly
         emitAll(leaderboardDao.getLeaderboard().map { entities ->
             entities.map { it.asExternalModel() }
         })
 
-        // 2. collection from Firebase stream
         networkDataSource.getLeaderboardStream()
             .onEach { networkEntries ->
-                // 3. Automatically overwrite local Room DB cache when fresh data arrives
                 leaderboardDao.clearLeaderboard()
                 leaderboardDao.insertLeaderboard(networkEntries.map { it.asEntity() })
             }
-            .collect { /* Firestore snapshots are handled in onEach and emitted via Flow */ }
+            .collect {}
+    }
+
+    override suspend fun getQuestions(): List<QuizQuestion> {
+        // Return dummy data for initial testing on emulator
+        return listOf(
+            QuizQuestion(
+                id = "1",
+                text = "What is the capital of France?",
+                options = listOf("London", "Berlin", "Paris", "Madrid"),
+                correctOptionIndex = 2,
+                category = QuizCategory.GEOGRAPHY
+            ),
+            QuizQuestion(
+                id = "2",
+                text = "Which planet is known as the Red Planet?",
+                options = listOf("Venus", "Mars", "Jupiter", "Saturn"),
+                correctOptionIndex = 1,
+                category = QuizCategory.GEOGRAPHY
+            ),
+            QuizQuestion(
+                id = "3",
+                text = "What is 5 + 7?",
+                options = listOf("10", "11", "12", "13"),
+                correctOptionIndex = 2,
+                category = QuizCategory.VOCABULARY
+            )
+        )
     }
 
     override suspend fun submitFinalScore(userId: String, username: String, score: Int) {
@@ -42,11 +68,7 @@ class RealQuizRepository @Inject constructor(
             score = score,
             timestamp = System.currentTimeMillis()
         )
-
-        // 1. Save locally to Room first
         leaderboardDao.insertLeaderboard(listOf(entry.asEntity()))
-
-        // 2. Try to push to Firebase
         networkDataSource.submitScore(entry)
     }
 }
