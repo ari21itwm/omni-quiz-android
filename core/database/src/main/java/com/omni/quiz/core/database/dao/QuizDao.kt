@@ -10,7 +10,10 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface QuizDao {
     @Query("SELECT * FROM quiz_questions")
-    fun getQuestions(): Flow<List<QuizQuestionEntity>>
+    fun getQuestionsStream(): Flow<List<QuizQuestionEntity>>
+
+    @Query("SELECT * FROM quiz_questions")
+    suspend fun getQuestions(): List<QuizQuestionEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertQuestions(questions: List<QuizQuestionEntity>)

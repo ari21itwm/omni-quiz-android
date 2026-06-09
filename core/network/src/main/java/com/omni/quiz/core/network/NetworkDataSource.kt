@@ -1,6 +1,7 @@
 package com.omni.quiz.core.network
 
 import com.omni.quiz.core.model.LeaderboardEntry
+import com.omni.quiz.core.model.QuizQuestion
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -11,6 +12,11 @@ interface NetworkDataSource {
      * Streams real-time leaderboard updates.
      */
     fun getLeaderboardStream(): Flow<List<LeaderboardEntry>>
+
+    /**
+     * Fetches all available quiz questions.
+     */
+    suspend fun getQuestions(): List<QuizQuestion>
 
     /**
      * Submits a user's score to the leaderboard.
