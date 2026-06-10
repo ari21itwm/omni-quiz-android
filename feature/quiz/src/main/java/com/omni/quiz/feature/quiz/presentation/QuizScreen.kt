@@ -20,6 +20,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
 import com.omni.quiz.core.model.QuizQuestion
 import com.omni.quiz.core.model.QuizType
 
@@ -304,14 +305,11 @@ private fun GeographyCard(question: QuizQuestion) {
                 .height(200.dp),
             colors = CardDefaults.cardColors(containerColor = Color.LightGray.copy(alpha = 0.2f))
         ) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                // In a real app, use Coil to load question.imageUrl
-                Text(
-                    text = "[ Map Image Placeholder ]\n${question.imageUrl}",
-                    textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.bodySmall
-                )
-            }
+            AsyncImage(
+                model = question.imageUrl,
+                contentDescription = "Geography Map",
+                modifier = Modifier.fillMaxSize()
+            )
         }
         Spacer(modifier = Modifier.height(16.dp))
         Text(

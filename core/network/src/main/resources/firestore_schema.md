@@ -1,83 +1,54 @@
 # Firestore Schema: `questions` Collection
 
-The `questions` collection stores polymorphic learning content for OmniQuiz. Each document represents a single card or question.
+This document defines the polymorphic schema for the OmniQuiz `questions` collection.
 
-## Base Document Structure
+## Base Document Fields
 
 | Field | Type | Description |
 | :--- | :--- | :--- |
-| `text` | String | The main content (e.g., word to translate, question text, or quote). |
-| `options` | Array<String> | List of 4 multiple-choice answers (empty for Motivation). |
-| `correctOptionIndex` | Number | Index (0-3) of the correct answer in the `options` array. |
-| `type` | String | Enum: `VOCABULARY`, `GEOGRAPHY`, `MOTIVATION`. |
-| `imageUrl` | String (Optional) | URL for maps or visual aids. |
-| `translationHint` | String (Optional) | Hint for language learners. |
-| `isEngagementOnly` | Boolean | True if the card doesn't affect the user's score (e.g., Motivation). |
+| `text` | String | Word to translate, question text, or quote. |
+| `options` | Array<String> | 4 choice options (Empty for Motivation). |
+| `correctOptionIndex` | Number | Index (0-3) of the correct answer. |
+| `type` | String | `VOCABULARY`, `GEOGRAPHY`, or `MOTIVATION`. |
+| `imageUrl` | String? | Image URL (Required for Geography). |
+| `translationHint` | String? | Hint (Optional for Vocabulary). |
+| `isEngagementOnly` | Boolean | If true, scoring is skipped (Required for Motivation). |
 
 ---
 
-## Sample Remote Questions (Firestore Export Format)
+## Sample Data (Production Ready)
 
-### VOCABULARY
+### 1. Vocabulary (Polish)
 ```json
-[
-  {
-    "text": "Dziękuję",
-    "options": ["Please", "Thank you", "Sorry", "Yes"],
-    "correctOptionIndex": 1,
-    "type": "VOCABULARY",
-    "translationHint": "A common polite expression",
-    "isEngagementOnly": false
-  },
-  {
-    "text": "Przepraszam",
-    "options": ["Excuse me / Sorry", "Goodbye", "Welcome", "No"],
-    "correctOptionIndex": 0,
-    "type": "VOCABULARY",
-    "translationHint": "Used when bumping into someone",
-    "isEngagementOnly": false
-  }
-]
+{
+  "text": "Dziękuję",
+  "options": ["Please", "Thank you", "Sorry", "Yes"],
+  "correctOptionIndex": 1,
+  "type": "VOCABULARY",
+  "translationHint": "A polite expression of gratitude.",
+  "isEngagementOnly": false
+}
 ```
 
-### GEOGRAPHY
+### 2. Geography (Image via Wikimedia)
 ```json
-[
-  {
-    "text": "Identify this European country",
-    "options": ["Germany", "Slovakia", "Poland", "Ukraine"],
-    "correctOptionIndex": 2,
-    "type": "GEOGRAPHY",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Poland_in_European_Union.svg/1024px-Poland_in_European_Union.svg.png",
-    "isEngagementOnly": false
-  },
-  {
-    "text": "Which city is shown in this silhouette?",
-    "options": ["Prague", "Warsaw", "Berlin", "Vienna"],
-    "correctOptionIndex": 1,
-    "type": "GEOGRAPHY",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/Warszawa_panorama_z_PKiN.jpg/1200px-Warszawa_panorama_z_PKiN.jpg",
-    "isEngagementOnly": false
-  }
-]
+{
+  "text": "Identify the country highlighted in red.",
+  "options": ["Poland", "Germany", "France", "Italy"],
+  "correctOptionIndex": 0,
+  "type": "GEOGRAPHY",
+  "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/Flag_of_Poland.svg/1200px-Flag_of_Poland.svg.png",
+  "isEngagementOnly": false
+}
 ```
 
-### MOTIVATION
+### 3. Motivation
 ```json
-[
-  {
-    "text": "The only way to do great work is to love what you do.",
-    "options": [],
-    "correctOptionIndex": -1,
-    "type": "MOTIVATION",
-    "isEngagementOnly": true
-  },
-  {
-    "text": "Success is not final, failure is not fatal: it is the courage to continue that counts.",
-    "options": [],
-    "correctOptionIndex": -1,
-    "type": "MOTIVATION",
-    "isEngagementOnly": true
-  }
-]
+{
+  "text": "Vibe coding is about the flow, not just the logic.",
+  "options": [],
+  "correctOptionIndex": -1,
+  "type": "MOTIVATION",
+  "isEngagementOnly": true
+}
 ```
