@@ -27,7 +27,7 @@ jobs:
       run: ./gradlew testDebugUnitTest lintDebug --parallel
 
   instrumented-test:
-    runs-on: macos-latest # Required for KVM hardware acceleration
+    runs-on: ubuntu-latest # Supports KVM nested virtualization
     timeout-minutes: 30
     
     steps:
@@ -45,7 +45,7 @@ jobs:
       uses: reactivecircus/android-emulator-runner@v2
       with:
         api-level: 29
-        arch: arm64-v8a
+        arch: x86_64
         target: google_apis
         disable-animations: true
         force-avd-creation: false
