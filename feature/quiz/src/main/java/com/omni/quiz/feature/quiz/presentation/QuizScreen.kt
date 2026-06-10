@@ -1,6 +1,8 @@
 package com.omni.quiz.feature.quiz.presentation
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -59,9 +61,11 @@ fun QuizScreen(
                     score = state.currentScore,
                     selectedOption = state.selectedOptionIndex,
                     isHintVisible = state.isHintVisible,
+                    isAnswerRevealed = state.isAnswerRevealed,
                     onOptionSelected = viewModel::selectOption,
                     onToggleHint = viewModel::toggleHint,
-                    onSubmit = viewModel::submitAnswer
+                    onSubmit = viewModel::submitAnswer,
+                    onNext = viewModel::moveToNextQuestion
                 )
                 is QuizUiState.GameOver -> GameOverContent(
                     score = state.finalScore,
@@ -108,9 +112,11 @@ private fun QuizContent(
     score: Int,
     selectedOption: Int?,
     isHintVisible: Boolean,
+    isAnswerRevealed: Boolean,
     onOptionSelected: (Int) -> Unit,
     onToggleHint: () -> Unit,
-    onSubmit: () -> Unit
+    onSubmit: () -> Unit,
+    onNext: () -> Unit
 ) {
     val question = questions.getOrNull(currentIndex) ?: return
 
@@ -170,29 +176,37 @@ private fun QuizContent(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 question.options.forEachIndexed { index, option ->
+                    val isCorrect = index == question.correctOptionIndex
                     val isSelected = selectedOption == index
-                    val containerColor = if (isSelected) {
-                        MaterialTheme.colorScheme.primaryContainer
-                    } else {
-                        MaterialTheme.colorScheme.surface
-                    }
-                    val contentColor = if (isSelected) {
-                        MaterialTheme.colorScheme.onPrimaryContainer
-                    } else {
-                        MaterialTheme.colorScheme.onSurface
+                    
+                    val containerColor by animateColorAsState(
+                        targetValue = when {
+                            isAnswerRevealed && isCorrect -> Color(0xFFC8E6C9) // Light Green
+                            isAnswerRevealed && isSelected && !isCorrect -> Color(0xFFFFCDD2) // Light Red
+                            isSelected -> MaterialTheme.colorScheme.primaryContainer
+                            else -> MaterialTheme.colorScheme.surface
+                        },
+                        label = "option_color"
+                    )
+                    
+                    val contentColor = when {
+                        isAnswerRevealed && (isCorrect || isSelected) -> Color.Black
+                        isSelected -> MaterialTheme.colorScheme.onPrimaryContainer
+                        else -> MaterialTheme.colorScheme.onSurface
                     }
 
                     Surface(
-                        onClick = { onOptionSelected(index) },
+                        onClick = { if (!isAnswerRevealed) onOptionSelected(index) },
                         modifier = Modifier.fillMaxWidth(),
                         shape = MaterialTheme.shapes.medium,
                         color = containerColor,
                         contentColor = contentColor,
                         tonalElevation = 2.dp,
-                        border = if (isSelected) null else androidx.compose.foundation.BorderStroke(
-                            1.dp,
-                            MaterialTheme.colorScheme.outlineVariant
-                        )
+                        border = if (isSelected || (isAnswerRevealed && isCorrect)) {
+                            BorderStroke(2.dp, if (isCorrect && isAnswerRevealed) Color(0xFF4CAF50) else MaterialTheme.colorScheme.primary)
+                        } else {
+                            BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+                        }
                     ) {
                         Text(
                             text = option,
@@ -207,7 +221,7 @@ private fun QuizContent(
         Spacer(modifier = Modifier.height(32.dp))
 
         Button(
-            onClick = onSubmit,
+            onClick = if (isAnswerRevealed) onNext else onSubmit,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
@@ -216,9 +230,9 @@ private fun QuizContent(
         ) {
             Text(
                 text = when {
+                    isAnswerRevealed -> if (currentIndex < questions.size - 1) "Next Question" else "Finish Quiz"
                     question.isEngagementOnly -> "Inspired!"
-                    currentIndex < questions.size - 1 -> "Next Question"
-                    else -> "Finish Quiz"
+                    else -> "Check Answer"
                 },
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold

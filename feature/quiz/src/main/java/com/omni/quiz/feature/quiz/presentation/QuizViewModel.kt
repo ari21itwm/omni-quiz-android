@@ -50,7 +50,7 @@ class QuizViewModel @Inject constructor(
 
     fun selectOption(index: Int) {
         _uiState.update { state ->
-            if (state is QuizUiState.Success) {
+            if (state is QuizUiState.Success && !state.isAnswerRevealed) {
                 state.copy(selectedOptionIndex = index)
             } else state
         }
@@ -58,33 +58,45 @@ class QuizViewModel @Inject constructor(
     
     fun toggleHint() {
         _uiState.update { state ->
-            if (state is QuizUiState.Success) {
+            if (state is QuizUiState.Success && !state.isAnswerRevealed) {
                 state.copy(isHintVisible = !state.isHintVisible)
             } else state
         }
     }
 
     fun submitAnswer() {
+        _uiState.update { state ->
+            if (state is QuizUiState.Success && !state.isAnswerRevealed) {
+                val question = state.questions.getOrNull(state.currentQuestionIndex)
+                val isCorrect = question?.correctOptionIndex == state.selectedOptionIndex
+                
+                val newScore = if (isCorrect && question?.isEngagementOnly != true) state.currentScore + 1 else state.currentScore
+                
+                state.copy(
+                    currentScore = newScore,
+                    isAnswerRevealed = true
+                )
+            } else state
+        }
+    }
+
+    fun moveToNextQuestion() {
         val currentState = _uiState.value
-        if (currentState is QuizUiState.Success) {
-            val question = currentState.questions.getOrNull(currentState.currentQuestionIndex)
-            val isCorrect = question?.correctOptionIndex == currentState.selectedOptionIndex
-            
-            val newScore = if (isCorrect && !question?.isEngagementOnly!!) currentState.currentScore + 1 else currentState.currentScore
+        if (currentState is QuizUiState.Success && currentState.isAnswerRevealed) {
             val nextIndex = currentState.currentQuestionIndex + 1
             
             if (nextIndex < currentState.questions.size) {
                 _uiState.value = currentState.copy(
                     currentQuestionIndex = nextIndex,
-                    currentScore = newScore,
                     selectedOptionIndex = null,
-                    isHintVisible = false
+                    isHintVisible = false,
+                    isAnswerRevealed = false
                 )
             } else {
-                _uiState.value = QuizUiState.GameOver(newScore)
+                _uiState.value = QuizUiState.GameOver(currentState.currentScore)
                 viewModelScope.launch {
                     try {
-                        repository.submitFinalScore("user_123", "Quiz Master", newScore)
+                        repository.submitFinalScore("user_123", "Quiz Master", currentState.currentScore)
                     } catch (e: Exception) {
                         // Log or handle error if submission fails
                     }
