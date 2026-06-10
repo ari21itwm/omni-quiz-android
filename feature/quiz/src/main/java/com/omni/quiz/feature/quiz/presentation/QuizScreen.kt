@@ -1,29 +1,11 @@
 package com.omni.quiz.feature.quiz.presentation
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -39,14 +21,26 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.omni.quiz.core.model.QuizQuestion
 import com.omni.quiz.core.model.QuizType
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun QuizScreen(
-    viewModel: QuizViewModel = hiltViewModel()
+    viewModel: QuizViewModel = hiltViewModel(),
+    onBack: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
     Scaffold(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize(),
+        topBar = {
+            TopAppBar(
+                title = { Text("OmniQuiz") },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    }
+                }
+            )
+        }
     ) { paddingValues ->
         Box(
             modifier = Modifier
@@ -57,7 +51,7 @@ fun QuizScreen(
                 is QuizUiState.Loading -> LoadingContent()
                 is QuizUiState.Error -> ErrorContent(
                     message = state.message,
-                    onRetry = viewModel::loadQuiz
+                    onRetry = viewModel::retry
                 )
                 is QuizUiState.Success -> QuizContent(
                     questions = state.questions,
@@ -71,7 +65,8 @@ fun QuizScreen(
                 )
                 is QuizUiState.GameOver -> GameOverContent(
                     score = state.finalScore,
-                    onPlayAgain = viewModel::loadQuiz
+                    onPlayAgain = viewModel::retry,
+                    onBack = onBack
                 )
             }
         }
@@ -350,7 +345,7 @@ private fun MotivationCard(question: QuizQuestion) {
 }
 
 @Composable
-private fun GameOverContent(score: Int, onPlayAgain: () -> Unit) {
+private fun GameOverContent(score: Int, onPlayAgain: () -> Unit, onBack: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -388,6 +383,15 @@ private fun GameOverContent(score: Int, onPlayAgain: () -> Unit) {
                 .height(56.dp)
         ) {
             Text("Play Again", fontSize = 18.sp)
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        OutlinedButton(
+            onClick = onBack,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+        ) {
+            Text("Back to Dashboard", fontSize = 18.sp)
         }
     }
 }

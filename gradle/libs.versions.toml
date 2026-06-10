@@ -14,6 +14,8 @@ room = "2.8.4"
 ksp = "2.0.21-1.0.28"
 hilt = "2.59.2"
 hiltNavigationCompose = "1.2.0"
+mockk = "1.13.12"
+turtle = "0.9.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -41,6 +43,7 @@ firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutines" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
 kotlinx-coroutines-play-services = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version.ref = "coroutines" }
+kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
 
 # Room
 androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
@@ -51,6 +54,10 @@ androidx-room-compiler = { group = "androidx.room", name = "room-compiler", vers
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
 hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hilt" }
 androidx-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
+
+# Testing
+mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
+turtle = { group = "com.lordcodes.turtle", name = "turtle", version.ref = "turtle" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

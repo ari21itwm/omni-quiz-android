@@ -13,7 +13,9 @@ def check_git_repository():
 
 def generate_ai_commit_message(diff_text):
     api_key = os.environ.get("GEMINI_API_KEY")
-    if not api_key: return "chore: automated architectural update"
+    if not api_key:
+        print("⚠️ Warning: GEMINI_API_KEY not found in environment. Using fallback message.")
+        return "chore: automated architectural update"
 
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
     prompt = (
@@ -28,14 +30,15 @@ def generate_ai_commit_message(diff_text):
         with urllib.request.urlopen(req) as response:
             res_data = json.loads(response.read().decode("utf-8"))
             return res_data["candidates"][0]["content"]["parts"][0]["text"].strip().replace("`", "")
-    except Exception:
+    except Exception as e:
+        print(f"⚠️ AI Generation failed ({e}). Using fallback message.")
         return "chore: automated architectural update"
 
 def execute_autonomous_pipeline():
-    """Executes staging, verification, AI-commit, and cloud push with ZERO human interaction."""
+    """Executes staging, verification, commit, and cloud push with optional manual messages."""
     check_git_repository()
     try:
-        # 1. Stage changes (ignoring build folders via .gitignore configuration)
+        # 1. Stage changes
         subprocess.run(["git", "add", "."], check=True)
 
         # 2. Get Diff
@@ -46,7 +49,7 @@ def execute_autonomous_pipeline():
             print("ℹ️ No source changes detected. Pipeline skipped.")
             return
 
-        print("✨ Autonomous Pipeline initiated by Agent!")
+        print("✨ Autonomous Pipeline initiated!")
 
         # 3. Cross-Platform Health Check Build
         gradle_binary = "gradlew.bat" if os.name == "nt" else "./gradlew"
@@ -58,12 +61,16 @@ def execute_autonomous_pipeline():
             print(build_res.stderr)
             sys.exit(1)
 
-        # 4. Fetch AI Commit Message & Commit
-        commit_msg = generate_ai_commit_message(diff_text)
-        print(f"🤖 Gemini Message generated: '{commit_msg}'")
-        subprocess.run(["git", "commit", "-m", commit_msg], check=True)
+        # 4. Decide between Manual Commit Message or AI
+        if len(sys.argv) > 1 and sys.argv[1].strip():
+            commit_msg = sys.argv[1].strip()
+            print(f"✍️ Using manual commit message: '{commit_msg}'")
+        else:
+            commit_msg = generate_ai_commit_message(diff_text)
+            print(f"🤖 Gemini Message generated: '{commit_msg}'")
 
-        # 5. Push instantly to GitHub (No prompts, completely headless)
+        # 5. Commit & Push
+        subprocess.run(["git", "commit", "-m", commit_msg], check=True)
         print("🚀 Pushing autonomously to GitHub...")
         subprocess.run(["git", "push", "origin", "main"], check=True)
         print("🎉 Cloud Sync Complete! Code is live and verified.")

@@ -4,7 +4,7 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt)
-    id("com.google.gms.google-services")
+    id("com.google.gms.google-services") version "4.4.2"
 }
 
 android {
@@ -43,6 +43,7 @@ dependencies {
     implementation(project(":core:database"))
     
     implementation(libs.hilt.android)
+    implementation(libs.androidx.hilt.navigation.compose)
     ksp(libs.hilt.compiler)
 
     implementation(platform(libs.androidx.compose.bom))

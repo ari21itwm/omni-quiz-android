@@ -14,7 +14,7 @@ import com.omni.quiz.core.database.util.Converters
         QuizQuestionEntity::class,
         LeaderboardEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
