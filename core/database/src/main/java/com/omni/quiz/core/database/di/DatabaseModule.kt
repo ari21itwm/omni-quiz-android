@@ -25,7 +25,8 @@ object DatabaseModule {
             context,
             OmniDatabase::class.java,
             "omni-database"
-        ).build()
+        ).fallbackToDestructiveMigration()
+            .build()
     }
 
     @Provides
