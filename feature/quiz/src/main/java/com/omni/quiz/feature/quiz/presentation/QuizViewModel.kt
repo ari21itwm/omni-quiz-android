@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.omni.quiz.core.data.repository.QuizRepository
 import com.omni.quiz.core.model.QuizQuestion
 import com.omni.quiz.core.model.QuizType
+import com.omni.quiz.core.network.FirestoreSeeder
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,7 +16,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class QuizViewModel @Inject constructor(
-    private val repository: QuizRepository
+    private val repository: QuizRepository,
+    private val seeder: FirestoreSeeder
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<QuizUiState>(QuizUiState.Loading)
@@ -101,6 +103,16 @@ class QuizViewModel @Inject constructor(
                         // Log or handle error if submission fails
                     }
                 }
+            }
+        }
+    }
+
+    fun seedDatabase() {
+        viewModelScope.launch {
+            try {
+                seeder.seedDatabase()
+            } catch (e: Exception) {
+                // Log or handle error
             }
         }
     }

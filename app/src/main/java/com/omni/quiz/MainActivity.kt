@@ -33,7 +33,8 @@ class MainActivity : ComponentActivity() {
                             onCategorySelected = { type ->
                                 viewModel.loadQuiz(type)
                                 currentScreen = Screen.Quiz(type)
-                            }
+                            },
+                            onSeedDatabase = viewModel::seedDatabase
                         )
                     }
                     is Screen.Quiz -> {
