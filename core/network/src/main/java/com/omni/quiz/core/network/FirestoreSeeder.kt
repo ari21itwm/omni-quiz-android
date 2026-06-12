@@ -1,8 +1,13 @@
 package com.omni.quiz.core.network
 
+import android.content.Context
 import android.util.Log
+import android.widget.Toast
 import com.google.firebase.firestore.FirebaseFirestore
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -11,7 +16,8 @@ import javax.inject.Singleton
  */
 @Singleton
 class FirestoreSeeder @Inject constructor(
-    private val firestore: FirebaseFirestore
+    private val firestore: FirebaseFirestore,
+    @ApplicationContext private val context: Context
 ) {
 
     suspend fun seedDatabase() {
@@ -54,9 +60,17 @@ class FirestoreSeeder @Inject constructor(
                 Log.d("FirestoreSeeder", "✅ Successfully added document with ID: ${result.id}")
             }
             Log.d("FirestoreSeeder", "🎉 Database Seeding Complete!")
+            showToast("Seeding Success!")
         } catch (e: Exception) {
             Log.e("FirestoreSeeder", "❌ Error seeding database", e)
+            showToast("Seeding Failed: ${e.message}")
             throw e
+        }
+    }
+
+    private suspend fun showToast(message: String) {
+        withContext(Dispatchers.Main) {
+            Toast.makeText(context, message, Toast.LENGTH_LONG).show()
         }
     }
 }

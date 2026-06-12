@@ -18,6 +18,7 @@ import org.junit.Test
 class QuizViewModelTest {
 
     private val repository: QuizRepository = mockk()
+    private val seeder: com.omni.quiz.core.network.FirestoreSeeder = mockk()
     private lateinit var viewModel: QuizViewModel
     private val testDispatcher = UnconfinedTestDispatcher()
 
@@ -32,7 +33,7 @@ class QuizViewModelTest {
             QuizQuestion("3", "M1", listOf("A", "B"), 0, QuizType.MOTIVATION)
         )
         
-        viewModel = QuizViewModel(repository)
+        viewModel = QuizViewModel(repository, seeder)
     }
 
     @After

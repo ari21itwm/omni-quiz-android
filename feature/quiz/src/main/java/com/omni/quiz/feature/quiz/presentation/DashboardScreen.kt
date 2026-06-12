@@ -17,7 +17,8 @@ import com.omni.quiz.core.model.QuizType
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
-    onCategorySelected: (QuizType) -> Unit
+    onCategorySelected: (QuizType) -> Unit,
+    onSeedDatabase: () -> Unit = {}
 ) {
     Scaffold(
         topBar = {
@@ -70,6 +71,18 @@ fun DashboardScreen(
             item {
                 Spacer(modifier = Modifier.height(16.dp))
                 LeaderboardPlaceholder()
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(32.dp))
+                Button(
+                    onClick = onSeedDatabase,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("RE-SEED DATABASE")
+                }
+                Spacer(modifier = Modifier.height(32.dp))
             }
         }
     }
