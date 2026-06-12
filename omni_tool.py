@@ -72,7 +72,12 @@ def execute_autonomous_pipeline():
         # 5. Commit & Push
         subprocess.run(["git", "commit", "-m", commit_msg], check=True)
         print("🚀 Pushing autonomously to GitHub...")
-        subprocess.run(["git", "push", "origin", "main"], check=True)
+        
+        # Get current branch to push correctly
+        branch_res = subprocess.run(["git", "branch", "--show-current"], capture_output=True, text=True, check=True)
+        current_branch = branch_res.stdout.strip()
+        
+        subprocess.run(["git", "push", "origin", current_branch], check=True)
         print("🎉 Cloud Sync Complete! Code is live and verified.")
 
     except Exception as e:
